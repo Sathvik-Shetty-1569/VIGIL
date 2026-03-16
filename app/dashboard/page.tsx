@@ -33,23 +33,77 @@ const [previewTomorrow, setPreviewTomorrow] = useState(false)
     if (user) fetchData()
   }, [user])
 
-  const fetchData = async () => {
-    const { data: goalsData } = await supabase
-      .from('goals')
-      .select('*')
-      .eq('user_id', user?.id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-setPreviewTomorrow(false)
-    const { data: tasksData } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('user_id', user?.id)
+ const fetchData = async () => {
+  const { data: goalsData } = await supabase
+    .from('goals')
+    .select('*')
+    .eq('user_id', user?.id)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
 
-    setGoals(goalsData || [])
-    setTasks(tasksData || [])
-    setLoading(false)
+  setPreviewTomorrow(false)
+
+  const { data: tasksData } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', user?.id)
+
+  setGoals(goalsData || [])
+
+  // Auto-reschedule missed tasks silently
+  await autoRescheduleMissed(tasksData || [], goalsData || [])
+
+  // Re-fetch tasks after rescheduling so UI shows updated dates
+  const { data: updatedTasks } = await supabase
+    .from('tasks')
+    .select('*')
+    .eq('user_id', user?.id)
+
+  setTasks(updatedTasks || [])
+  setLoading(false)
+}
+  const autoRescheduleMissed = async (allTasks: Task[], allGoals: Goal[]) => {
+  const yesterday = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000) - 86400000)
+    .toISOString().split('T')[0]
+
+  const missedTasks = allTasks.filter(t =>
+    t.due_date <= yesterday && !t.completed
+  )
+
+  if (missedTasks.length === 0) return
+
+  for (const goal of allGoals) {
+    const goalMissed = missedTasks.filter(t => t.goal_id === goal.id)
+    if (goalMissed.length === 0) continue
+
+    const res = await fetch('/api/reschedule', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        missedTasks: goalMissed,
+        goalTitle: goal.title,
+        today: new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000))
+          .toISOString().split('T')[0],
+      }),
+    })
+
+    const { tasks: rescheduledTasks } = await res.json()
+
+    await supabase
+      .from('tasks')
+      .delete()
+      .in('id', goalMissed.map(t => t.id))
+
+    await supabase
+      .from('tasks')
+      .insert(rescheduledTasks.map((t: { title: string, due_date: string, day_number: number }) => ({
+        ...t,
+        user_id: user?.id,
+        goal_id: goal.id,
+        completed: false,
+      })))
   }
+}
 
 const todaysTasks = tasks.filter(t => {
   const today = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000))
