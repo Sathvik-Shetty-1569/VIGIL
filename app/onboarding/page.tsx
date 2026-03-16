@@ -293,7 +293,7 @@ export default function Onboarding() {
                 </div>
 
                 <textarea
-                  placeholder="Extra info for AI breakdown (e.g., Arrays and sorting are completed)"
+                  placeholder="Tell VIGIL what you already know or have done (e.g., I've finished Arrays, Trees and DP. Skip those and focus on Graphs, Backtracking and System Design)"
                   value={goal.suggestion || ''}
                   onChange={e => updateGoal(index, 'suggestion', e.target.value)}
                   style={{
