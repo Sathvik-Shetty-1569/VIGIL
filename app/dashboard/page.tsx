@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [goals, setGoals] = useState<Goal[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
+const [previewTomorrow, setPreviewTomorrow] = useState(false)
 
   useEffect(() => {
     if (user) fetchData()
@@ -37,8 +38,9 @@ export default function Dashboard() {
       .from('goals')
       .select('*')
       .eq('user_id', user?.id)
+      .eq('status', 'active')
       .order('created_at', { ascending: false })
-
+setPreviewTomorrow(false)
     const { data: tasksData } = await supabase
       .from('tasks')
       .select('*')
@@ -49,27 +51,29 @@ export default function Dashboard() {
     setLoading(false)
   }
 
-  const todaysTasks = tasks.filter(t => {
-    const today = new Date().toISOString().split('T')[0]
-    return t.due_date === today
-  })
+const todaysTasks = tasks.filter(t => {
+  const today = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000))
+    .toISOString().split('T')[0] // IST offset for you in Pen, Maharashtra
+  return t.due_date === today
+})
 
   const completedToday = todaysTasks.filter(t => t.completed).length
   const focusScore = todaysTasks.length > 0
     ? Math.round((completedToday / todaysTasks.length) * 100)
     : 0
 
-  const toggleTask = async (taskId: string, completed: boolean) => {
-    await supabase
-      .from('tasks')
-      .update({ completed: !completed })
-      .eq('id', taskId)
+const toggleTask = async (taskId: string, completed: boolean) => {
+  const { error } = await supabase
+    .from('tasks')
+    .update({ completed: !completed })
+    .eq('id', taskId)
 
-    setTasks(tasks.map(t =>
+  if (!error) {
+    setTasks(prev => prev.map(t =>
       t.id === taskId ? { ...t, completed: !completed } : t
     ))
   }
-
+}
   const daysLeft = (deadline: string) => {
     const diff = new Date(deadline).getTime() - new Date().getTime()
     return Math.ceil(diff / (1000 * 60 * 60 * 24))
@@ -145,6 +149,32 @@ export default function Dashboard() {
             }}>
             + NEW GOAL
           </button>
+          <button
+  onClick={() => router.push('/review')}
+  style={{
+    background: 'rgba(139,92,246,0.1)',
+    border: '1px solid rgba(139,92,246,0.2)',
+    borderRadius: '8px', padding: '8px 14px',
+    color: 'rgba(139,92,246,0.8)',
+    fontSize: '11px', letterSpacing: '0.1em',
+    fontFamily: 'Space Grotesk, sans-serif',
+    cursor: 'pointer',
+  }}>
+  WEEKLY REVIEW
+</button>
+<button
+  onClick={() => router.push('/history')}
+  style={{
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '8px', padding: '8px 14px',
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: '11px', letterSpacing: '0.1em',
+    fontFamily: 'Space Grotesk, sans-serif',
+    cursor: 'pointer',
+  }}>
+  HISTORY
+</button>
           <UserButton />
         </div>
       </nav>
@@ -202,10 +232,97 @@ export default function Dashboard() {
                 textTransform: 'uppercase', fontFamily: 'Inter, sans-serif',
               }}>{stat.label}</div>
             </div>
+            
           ))}
         </div>
 
+        {/* Tomorrow preview - outside stats grid */}
+       {todaysTasks.length > 0 && completedToday === todaysTasks.length && (
+  <div style={{
+    marginBottom: '32px',
+    borderRadius: '12px',
+    padding: '20px',
+    background: 'rgba(79,142,247,0.04)',
+    border: '1px solid rgba(79,142,247,0.15)',
+    backdropFilter: 'blur(12px)',
+    textAlign: 'center',
+  }}>
+    <div style={{
+      fontSize: '11px', letterSpacing: '0.1em',
+      color: 'rgba(79,142,247,0.5)',
+      fontFamily: 'Inter, sans-serif',
+      marginBottom: '12px',
+    }}>
+      ALL DONE FOR TODAY
+    </div>
+    <button
+      onClick={() => {
+        const tomorrow = new Date()
+        tomorrow.setDate(tomorrow.getDate() + 1)
+        const tomorrowStr = tomorrow.toISOString().split('T')[0]
+        const tomorrowTasks = tasks.filter(t => 
+  t.due_date === tomorrowStr && 
+  goals.some(g => g.id === t.goal_id)
+)  
+      if (tomorrowTasks.length === 0) {
+          alert('No tasks scheduled for tomorrow yet.')
+        } else {
+          setPreviewTomorrow(prev => !prev)
+        }
+      }}
+      style={{
+        background: 'rgba(79,142,247,0.1)',
+        border: '1px solid rgba(79,142,247,0.25)',
+        borderRadius: '8px', padding: '10px 20px',
+        color: 'rgba(79,142,247,0.8)',
+        fontSize: '11px', letterSpacing: '0.12em',
+        fontFamily: 'Space Grotesk, sans-serif',
+        cursor: 'pointer',
+      }}
+    >
+      {previewTomorrow ? 'HIDE TOMORROW\'S TASKS ↑' : 'SEE TOMORROW\'S TASKS →'}
+    </button>
+
+    {previewTomorrow && (() => {
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const tomorrowStr = tomorrow.toISOString().split('T')[0]
+      const tomorrowTasks = tasks.filter(t => 
+  t.due_date === tomorrowStr && 
+  goals.some(g => g.id === t.goal_id)
+)    
+  return (
+        <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+          <div style={{
+            fontSize: '10px', letterSpacing: '0.12em',
+            color: 'rgba(255,255,255,0.2)', fontFamily: 'Inter, sans-serif',
+            marginBottom: '4px',
+          }}>TOMORROW</div>
+          {tomorrowTasks.map(task => (
+            <div key={task.id} style={{
+              borderRadius: '10px', padding: '14px 16px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '1px solid rgba(255,255,255,0.05)',
+              display: 'flex', alignItems: 'center', gap: '12px',
+            }}>
+              <div style={{
+                width: '16px', height: '16px', borderRadius: '50%',
+                border: '1px solid rgba(255,255,255,0.1)',
+                flexShrink: 0,
+              }} />
+              <span style={{
+                fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                color: 'rgba(255,255,255,0.4)',
+              }}>{task.title}</span>
+            </div>
+          ))}
+        </div>
+      )
+    })()}
+  </div>
+)}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+
 
           {/* Goals */}
           <div>

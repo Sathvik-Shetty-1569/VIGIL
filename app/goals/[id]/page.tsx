@@ -34,6 +34,27 @@ export default function GoalDetail() {
     if (user) fetchGoalData()
   }, [user])
 
+  const abandonGoal = async () => {
+  if (!confirm('Abandon this goal? It will be marked as failed and you can start fresh.')) return
+
+  // Mark goal as failed
+  await supabase
+    .from('goals')
+    .update({ 
+      status: 'failed',
+      abandoned_at: new Date().toISOString()
+    })
+    .eq('id', goalId)
+
+  // Mark all tasks as incomplete
+  await supabase
+    .from('tasks')
+    .update({ completed: false })
+    .eq('goal_id', goalId)
+
+  router.push('/onboarding')
+}
+
   const fetchGoalData = async () => {
     const { data: goalData } = await supabase
       .from('goals')
@@ -274,7 +295,6 @@ export default function GoalDetail() {
             {tasks.map(task => (
               <div
                 key={task.id}
-                onClick={() => toggleTask(task.id, task.completed)}
                 style={{
                   borderRadius: '10px', padding: '16px 18px',
                   background: 'rgba(255,255,255,0.04)',
@@ -282,7 +302,7 @@ export default function GoalDetail() {
                     ? 'rgba(79,142,247,0.2)'
                     : 'rgba(255,255,255,0.07)'}`,
                   backdropFilter: 'blur(12px)',
-                  cursor: 'pointer',
+                  cursor:'default',
                   display: 'flex', alignItems: 'center', gap: '14px',
                   transition: 'all 0.2s',
                 }}
@@ -325,6 +345,52 @@ export default function GoalDetail() {
             ))}
           </div>
         )}
+       
+<div style={{ display: 'flex', gap: '12px', marginTop: '40px' }}>
+  
+  <button
+    onClick={async () => {
+      if (!confirm('Mark this goal as completed? Well done.')) return
+      await supabase
+        .from('goals')
+        .update({ status: 'completed' })
+        .eq('id', goalId)
+      router.push('/dashboard')
+    }}
+    disabled={progress < 100}
+    style={{
+      background: progress === 100 ? 'rgba(34,197,94,0.1)' : 'none',
+      border: `1px solid ${progress === 100 ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.07)'}`,
+      borderRadius: '10px',
+      padding: '12px 24px',
+      color: progress === 100 ? 'rgba(34,197,94,0.8)' : 'rgba(255,255,255,0.15)',
+      fontSize: '11px',
+      letterSpacing: '0.12em',
+      fontFamily: 'Inter, sans-serif',
+      cursor: progress === 100 ? 'pointer' : 'not-allowed',
+    }}
+  >
+    FINISH GOAL ✓
+  </button>
+
+  <button
+    onClick={abandonGoal}
+    style={{
+      background: 'none',
+      border: '1px solid rgba(239,68,68,0.2)',
+      borderRadius: '10px',
+      padding: '12px 24px',
+      color: 'rgba(239,68,68,0.5)',
+      fontSize: '11px',
+      letterSpacing: '0.12em',
+      fontFamily: 'Inter, sans-serif',
+      cursor: 'pointer',
+    }}
+  >
+    ABANDON GOAL →
+  </button>
+
+</div>
       </div>
     </main>
   )
