@@ -1,4 +1,4 @@
-"use client";
+import { ClerkProvider } from '@clerk/nextjs'
 import { Space_Grotesk, Inter } from 'next/font/google'
 import './globals.css'
 
@@ -12,16 +12,23 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+export const metadata = {
+  title: 'VIGIL',
+  description: "It doesn't push you. It watches.",
+}
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${spaceGrotesk.variable} ${inter.variable}`}>
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${spaceGrotesk.variable} ${inter.variable}`}>
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

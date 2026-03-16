@@ -1,6 +1,9 @@
 "use client";
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+    const router = useRouter()
+
   return (
     <main style={{
       minHeight: '100vh',
@@ -168,6 +171,8 @@ export default function Home() {
             (e.currentTarget as HTMLElement).style.background = 'rgba(79,142,247,0.12)';
             (e.currentTarget as HTMLElement).style.boxShadow = 'none';
           }}
+            onClick={() => router.push('/sign-up')}
+
         >
           ENTER VIGIL
         </button>
@@ -176,3 +181,4 @@ export default function Home() {
     </main>
   );
 }
+
