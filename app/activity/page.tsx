@@ -39,7 +39,16 @@ export default function Activity() {
   const [saving, setSaving] = useState(false)
   const [rescheduling, setRescheduling] = useState(false)
   const [rescheduled, setRescheduled] = useState(false)
-
+const [tooltip, setTooltip] = useState<{
+  visible: boolean
+  x: number
+  y: number
+  date: string
+  note: string | null
+  hours: number
+  tasks_completed: number
+  tasks_total: number
+} | null>(null)
   const today = new Date(new Date().getTime() + (5.5 * 60 * 60 * 1000))
     .toISOString().split('T')[0]
 
@@ -263,20 +272,35 @@ export default function Activity() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(13, 1fr)', gap: '4px' }}>
             {heatmapDays.map((day, i) => (
-              <div
-                key={i}
-                title={`${day.date}${day.log?.note ? ` — ${day.log.note}` : ''}${day.log?.hours ? ` — ${day.log.hours}h` : ''}${day.log?.tasks_total ? ` — ${day.log.tasks_completed}/${day.log.tasks_total} tasks` : ''}`}
-                style={{
-                  aspectRatio: '1',
-                  borderRadius: '3px',
-                  background: intensityColor(day.intensity),
-                  cursor: 'default',
-                  transition: 'transform 0.1s',
-                }}
-                onMouseEnter={e => (e.currentTarget).style.transform = 'scale(1.3)'}
-                onMouseLeave={e => (e.currentTarget).style.transform = 'scale(1)'}
-              />
-            ))}
+  <div
+    key={i}
+    style={{
+      aspectRatio: '1',
+      borderRadius: '3px',
+      background: intensityColor(day.intensity),
+      cursor: 'default',
+      transition: 'transform 0.1s',
+    }}
+    onMouseEnter={e => {
+      const rect = e.currentTarget.getBoundingClientRect()
+      setTooltip({
+        visible: true,
+        x: rect.left + window.scrollX,
+        y: rect.top + window.scrollY - 10,
+        date: day.date,
+        note: day.log?.note || null,
+        hours: day.log?.hours || 0,
+        tasks_completed: day.log?.tasks_completed || 0,
+        tasks_total: day.log?.tasks_total || 0,
+      })
+      e.currentTarget.style.transform = 'scale(1.3)'
+    }}
+    onMouseLeave={e => {
+      setTooltip(null)
+      e.currentTarget.style.transform = 'scale(1)'
+    }}
+  />
+))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '16px', justifyContent: 'flex-end' }}>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontFamily: 'Inter, sans-serif' }}>Less</span>
@@ -314,13 +338,14 @@ export default function Activity() {
               min="0" max="24" step="0.5"
               onChange={e => setHours(e.target.value)}
               style={{
-                width: '70px', background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '8px', padding: '12px 10px',
-                color: 'rgba(255,255,255,0.85)', fontSize: '13px',
-                fontFamily: 'Inter, sans-serif', outline: 'none',
-                textAlign: 'center',
-              }}
+  width: '70px', background: 'rgba(255,255,255,0.04)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  borderRadius: '8px', padding: '12px 10px',
+  color: 'rgba(255,255,255,0.85)', fontSize: '13px',
+  fontFamily: 'Inter, sans-serif', outline: 'none',
+  textAlign: 'center',
+  colorScheme: 'dark',
+}}
             />
             <button
               onClick={saveNote}
@@ -342,7 +367,7 @@ export default function Activity() {
           Recent Activity
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {logs.filter(l => l.note || l.tasks_total > 0).slice(0, 10).map(log => (
+          {logs.filter(l => l.note || l.tasks_total > 0).map(log => (
             <div key={log.id} style={{ borderRadius: '10px', padding: '16px 18px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Inter, sans-serif', marginBottom: '4px', letterSpacing: '0.05em' }}>{log.date}</div>
@@ -369,6 +394,59 @@ export default function Activity() {
           )}
         </div>
       </div>
+      {tooltip && (
+  <div style={{
+    position: 'fixed',
+    left: tooltip.x,
+    top: tooltip.y - 80,
+    transform: 'translateX(-50%)',
+    zIndex: 100,
+    background: 'rgba(2,8,24,0.95)',
+    border: '1px solid rgba(79,142,247,0.2)',
+    borderRadius: '10px',
+    padding: '10px 14px',
+    backdropFilter: 'blur(12px)',
+    pointerEvents: 'none',
+    minWidth: '160px',
+  }}>
+    <div style={{
+      fontSize: '10px', letterSpacing: '0.12em',
+      color: 'rgba(79,142,247,0.7)', fontFamily: 'Inter, sans-serif',
+      marginBottom: '6px',
+    }}>{tooltip.date}</div>
+
+    {tooltip.note && (
+      <div style={{
+        fontSize: '12px', color: 'rgba(255,255,255,0.8)',
+        fontFamily: 'Inter, sans-serif', marginBottom: '4px',
+      }}>{tooltip.note}</div>
+    )}
+
+    {tooltip.hours > 0 && (
+      <div style={{
+        fontSize: '11px', color: 'rgba(79,142,247,0.6)',
+        fontFamily: 'Inter, sans-serif', marginBottom: '4px',
+      }}>{tooltip.hours}h logged</div>
+    )}
+
+    {tooltip.tasks_total > 0 && (
+      <div style={{
+        fontSize: '11px',
+        color: tooltip.tasks_completed === tooltip.tasks_total
+          ? 'rgba(34,197,94,0.7)'
+          : 'rgba(255,255,255,0.3)',
+        fontFamily: 'Inter, sans-serif',
+      }}>{tooltip.tasks_completed}/{tooltip.tasks_total} tasks</div>
+    )}
+
+    {!tooltip.note && tooltip.hours === 0 && tooltip.tasks_total === 0 && (
+      <div style={{
+        fontSize: '11px', color: 'rgba(255,255,255,0.2)',
+        fontFamily: 'Inter, sans-serif',
+      }}>No activity</div>
+    )}
+  </div>
+)}
     </main>
   )
 }
