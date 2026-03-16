@@ -8,6 +8,7 @@ type Goal = {
   id: string
   title: string
   deadline: string
+  suggestion?: string
   status: string
 }
 
@@ -86,6 +87,7 @@ export default function GoalDetail() {
           deadline: goal.deadline,
           userId: user.id,
           goalId: goal.id,
+          suggestion: goal.suggestion,
         }),
       })
 

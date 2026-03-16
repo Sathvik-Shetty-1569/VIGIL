@@ -5,7 +5,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 export async function POST(req: Request) {
   try {
-    const { goalTitle, deadline, userId, goalId } = await req.json()
+    const { goalTitle, deadline, userId, goalId, suggestion } = await req.json()
 
     const today = new Date()
     const deadlineDate = new Date(deadline)
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 Goal: "${goalTitle}"
 Days available: ${daysLeft}
 Start date: ${today.toISOString().split('T')[0]}
+${suggestion ? `User Extra Info/Context: "${suggestion}"` : ''}
 
 Return ONLY a JSON array like this, no other text:
 [{"title":"task name","day_number":1,"due_date":"2026-03-17"},{"title":"task name","day_number":2,"due_date":"2026-03-18"}]

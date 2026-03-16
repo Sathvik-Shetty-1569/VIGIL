@@ -7,60 +7,64 @@ import { supabase } from '@/lib/supabase'
 export default function Onboarding() {
   const { user } = useUser()
   const router = useRouter()
-const [goals, setGoals] = useState([
-  { title: '', deadline: '', start_date: '' }
-])
-const [suggestions, setSuggestions] = useState<(string | null)[]>([null])
-const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setTimeout> | null)[]>([null])
+  const [goals, setGoals] = useState([
+    { title: '', deadline: '', start_date: '', suggestion: '' }
+  ])
+  const [suggestions, setSuggestions] = useState<(string | null)[]>([null])
+  const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setTimeout> | null)[]>([null])
   const [loading, setLoading] = useState(false)
 
- const addGoalField = () => {
-  setGoals([...goals, { title: '', deadline: '', start_date: '' }])
-  setSuggestions([...suggestions, null])
-  setSuggestionTimers([...suggestionTimers, null])
-}
+  const addGoalField = () => {
+    setGoals([...goals, { title: '', deadline: '', start_date: '', suggestion: '' }])
+    setSuggestions([...suggestions, null])
+    setSuggestionTimers([...suggestionTimers, null])
+  }
 
- const updateGoal = (index: number, field: string, value: string) => {
-  const updated = [...goals]
-  updated[index] = { ...updated[index], [field]: value }
-  setGoals(updated)
+  const updateGoal = (index: number, field: string, value: string) => {
+    const updated = [...goals]
+    updated[index] = { ...updated[index], [field]: value }
+    setGoals(updated)
 
-  // Trigger suggestion on title change
-  if (field === 'title') {
-    // Clear existing timer
-    const timers = [...suggestionTimers]
-    if (timers[index]) clearTimeout(timers[index]!)
-    
-    // Clear suggestion while typing
-    const newSuggestions = [...suggestions]
-    newSuggestions[index] = null
-    setSuggestions(newSuggestions)
+    // Trigger suggestion on title change
+    if (field === 'title') {
+      // Clear existing timer
+      const timers = [...suggestionTimers]
+      if (timers[index]) clearTimeout(timers[index]!)
 
-    if (value.length >= 5) {
-      const timer = setTimeout(async () => {
-        const res = await fetch('/api/suggest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: value }),
-        })
-        const data = await res.json()
-        setSuggestions(prev => {
-  const updated = [...prev]
-  updated[index] = data.suggestion
-  return updated
-})
-      }, 600)
-      timers[index] = timer
-      setSuggestionTimers(timers)
+      // Clear suggestion while typing
+      const newSuggestions = [...suggestions]
+      newSuggestions[index] = null
+      setSuggestions(newSuggestions)
+
+      if (value.length >= 5) {
+        const timer = setTimeout(async () => {
+          // Don't suggest if value changed since timer was set
+          const currentTitle = goals[index]?.title
+          if (currentTitle !== value) return
+
+          const res = await fetch('/api/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: value }),
+          })
+          const data = await res.json()
+          setSuggestions(prev => {
+            const updated = [...prev]
+            updated[index] = data.suggestion
+            return updated
+          })
+        }, 600)
+        timers[index] = timer
+        setSuggestionTimers(timers)
+      }
     }
   }
-}
 
   const removeGoal = (index: number) => {
-  setGoals(goals.filter((_, i) => i !== index))
-  setSuggestions(suggestions.filter((_, i) => i !== index))
-  setSuggestionTimers(suggestionTimers.filter((_, i) => i !== index))
-}
+    setGoals(goals.filter((_, i) => i !== index))
+    setSuggestions(suggestions.filter((_, i) => i !== index))
+    setSuggestionTimers(suggestionTimers.filter((_, i) => i !== index))
+  }
 
   const handleSubmit = async () => {
     const validGoals = goals.filter(g => g.title.trim() && g.deadline)
@@ -69,14 +73,15 @@ const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setT
     setLoading(true)
 
     const { error } = await supabase.from('goals').insert(
-  validGoals.map(g => ({
-    user_id: user?.id,
-    title: g.title.trim(),
-    deadline: g.deadline,
-    start_date: g.start_date || new Date().toISOString().split('T')[0],
-    status: 'active',
-  }))
-)
+      validGoals.map(g => ({
+        user_id: user?.id,
+        title: g.title.trim(),
+        deadline: g.deadline,
+        start_date: g.start_date || new Date().toISOString().split('T')[0],
+        suggestion: g.suggestion?.trim() || null,
+        status: 'active',
+      }))
+    )
 
     if (!error) {
       router.push('/dashboard')
@@ -86,7 +91,7 @@ const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setT
     }
   }
 
- return (
+  return (
     <main style={{
       minHeight: '100vh',
       background: '#020818',
@@ -146,9 +151,9 @@ const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setT
               boxShadow: '0 0 30px rgba(79,142,247,0.1)',
             }}>
               <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
-                <circle cx="14" cy="14" r="10" stroke="rgba(79,142,247,0.7)" strokeWidth="1" fill="none"/>
-                <circle cx="14" cy="14" r="4" fill="rgba(79,142,247,0.8)"/>
-                <circle cx="14" cy="14" r="1.5" fill="white"/>
+                <circle cx="14" cy="14" r="10" stroke="rgba(79,142,247,0.7)" strokeWidth="1" fill="none" />
+                <circle cx="14" cy="14" r="4" fill="rgba(79,142,247,0.8)" />
+                <circle cx="14" cy="14" r="1.5" fill="white" />
               </svg>
             </div>
             <h1 style={{
@@ -209,55 +214,64 @@ const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setT
                   }}
                 />
                 {/* AI Suggestion */}
-{suggestions[index] && suggestions[index] !== goal.title && (
-  <div
-    onClick={() => updateGoal(index, 'title', suggestions[index]!)}
-    style={{
-      display: 'flex', alignItems: 'center', gap: '8px',
-      padding: '8px 12px',
-      borderRadius: '8px',
-      background: 'rgba(79,142,247,0.06)',
-      border: '1px solid rgba(79,142,247,0.15)',
-      cursor: 'pointer',
-      transition: 'all 0.2s',
-    }}
-    onMouseEnter={e => (e.currentTarget).style.borderColor = 'rgba(79,142,247,0.35)'}
-    onMouseLeave={e => (e.currentTarget).style.borderColor = 'rgba(79,142,247,0.15)'}
-  >
-    <span style={{
-      fontSize: '9px', letterSpacing: '0.12em',
-      color: 'rgba(79,142,247,0.6)', fontFamily: 'Inter, sans-serif',
-      whiteSpace: 'nowrap',
-    }}>VIGIL SUGGESTS</span>
-    <span style={{
-      fontSize: '13px', fontFamily: 'Inter, sans-serif',
-      color: 'rgba(255,255,255,0.6)', flex: 1,
-    }}>{suggestions[index]}</span>
-    <span style={{
-      fontSize: '10px', color: 'rgba(79,142,247,0.5)',
-      fontFamily: 'Inter, sans-serif',
-    }}>← tap to use</span>
-  </div>
-)}
-<div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-  <span style={{
-    fontSize: '11px', color: 'rgba(255,255,255,0.3)',
-    fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
-  }}>Start from</span>
-  <input
-    type="date"
-    value={goal.start_date}
-    onChange={e => updateGoal(index, 'start_date', e.target.value)}
-    style={{
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: '8px', padding: '10px 14px',
-      color: 'rgba(255,255,255,0.7)',
-      fontSize: '13px', fontFamily: 'Inter, sans-serif',
-      outline: 'none', flex: 1, colorScheme: 'dark',
-    }}
-  />
-</div>
+                {suggestions[index] && suggestions[index] !== goal.title && (
+                  <div
+                    onClick={() => {
+                      const accepted = suggestions[index]!
+                      updateGoal(index, 'title', accepted)
+                      // Clear suggestion so it doesn't re-trigger
+                      setSuggestions(prev => {
+                        const updated = [...prev]
+                        updated[index] = null
+                        return updated
+                      })
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(79,142,247,0.06)',
+                      border: '1px solid rgba(79,142,247,0.15)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget).style.borderColor = 'rgba(79,142,247,0.35)'}
+                    onMouseLeave={e => (e.currentTarget).style.borderColor = 'rgba(79,142,247,0.15)'}
+                  >
+                    <span style={{
+                      fontSize: '9px', letterSpacing: '0.12em',
+                      color: 'rgba(79,142,247,0.6)', fontFamily: 'Inter, sans-serif',
+                      whiteSpace: 'nowrap',
+                    }}>VIGIL SUGGESTS</span>
+                    <span style={{
+                      fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                      color: 'rgba(255,255,255,0.6)', flex: 1,
+                    }}>{suggestions[index]}</span>
+                    <span style={{
+                      fontSize: '10px', color: 'rgba(79,142,247,0.5)',
+                      fontFamily: 'Inter, sans-serif',
+                    }}>← tap to use</span>
+                  </div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{
+                    fontSize: '11px', color: 'rgba(255,255,255,0.3)',
+                    fontFamily: 'Inter, sans-serif', whiteSpace: 'nowrap',
+                  }}>Start from</span>
+                  <input
+                    type="date"
+                    value={goal.start_date}
+                    onChange={e => updateGoal(index, 'start_date', e.target.value)}
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px', padding: '10px 14px',
+                      color: 'rgba(255,255,255,0.7)',
+                      fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                      outline: 'none', flex: 1, colorScheme: 'dark',
+                    }}
+                  />
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{
                     fontSize: '11px', color: 'rgba(255,255,255,0.3)',
@@ -277,7 +291,21 @@ const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setT
                     }}
                   />
                 </div>
-                
+
+                <textarea
+                  placeholder="Extra info for AI breakdown (e.g., Arrays and sorting are completed)"
+                  value={goal.suggestion || ''}
+                  onChange={e => updateGoal(index, 'suggestion', e.target.value)}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '8px', padding: '12px 14px',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: '13px', fontFamily: 'Inter, sans-serif',
+                    outline: 'none', width: '100%', minHeight: '60px',
+                    resize: 'vertical',
+                  }}
+                />
               </div>
             ))}
           </div>
@@ -293,11 +321,11 @@ const [suggestionTimers, setSuggestionTimers] = useState<(ReturnType<typeof setT
           }}
             onMouseEnter={e => {
               (e.currentTarget).style.borderColor = 'rgba(79,142,247,0.3)'
-              ;(e.currentTarget).style.color = 'rgba(79,142,247,0.6)'
+                ; (e.currentTarget).style.color = 'rgba(79,142,247,0.6)'
             }}
             onMouseLeave={e => {
               (e.currentTarget).style.borderColor = 'rgba(255,255,255,0.1)'
-              ;(e.currentTarget).style.color = 'rgba(255,255,255,0.3)'
+                ; (e.currentTarget).style.color = 'rgba(255,255,255,0.3)'
             }}
           >
             + Add another goal
