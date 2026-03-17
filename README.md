@@ -37,7 +37,7 @@ At the end of the week, it delivers a **verdict**.
 ## 📸 Preview
 
 
-![VIGIL Landing Page](./Screenshot.png)
+![VIGIL Landing Page](./LandingPage.png)
 ---
 
 
