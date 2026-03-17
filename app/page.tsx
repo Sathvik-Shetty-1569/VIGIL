@@ -108,44 +108,7 @@ export default function Home() {
           It doesn&apos;t push you. It watches.
         </p>
 
-        {/* Stats row */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '12px',
-          width: '100%',
-          marginBottom: '40px',
-        }}>
-          {[
-            { value: '0', label: 'Tasks Today' },
-            { value: '—', label: 'Focus Score' },
-            { value: '—', label: 'Weekly Review' },
-          ].map((stat, i) => (
-            <div key={i} style={{
-              borderRadius: '12px',
-              padding: '20px 16px',
-              textAlign: 'center',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.07)',
-              backdropFilter: 'blur(12px)',
-            }}>
-              <div style={{
-                fontSize: '26px',
-                fontWeight: '600',
-                color: 'rgba(255,255,255,0.8)',
-                marginBottom: '6px',
-                fontFamily: 'Space Grotesk, sans-serif',
-              }}>{stat.value}</div>
-              <div style={{
-                fontSize: '10px',
-                letterSpacing: '0.1em',
-                color: 'rgba(255,255,255,0.28)',
-                textTransform: 'uppercase',
-                fontFamily: 'Inter, sans-serif',
-              }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
+       
 
         {/* CTA */}
         <button
