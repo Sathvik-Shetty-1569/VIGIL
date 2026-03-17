@@ -1,30 +1,24 @@
 <div align="center">
 
-<br/>
-
-<pre align="center">
-██╗   ██╗██╗ ██████╗ ██╗██╗
-██║   ██║██║██╔════╝ ██║██║
-██║   ██║██║██║  ███╗██║██║
-╚██╗ ██╔╝██║██║   ██║██║██║
-      ╚████╔╝ ██║╚██████╔╝██║███████╗
-       ╚═══╝  ╚═╝ ╚═════╝ ╚═╝╚══════╝
-</pre>
+<h1>👁️ VIGIL</h1>
+<p>An AI productivity agent that watches your goals and delivers a cold, honest weekly verdict</p>
 
 ### *It doesn't push you. It watches.*
 
 <br/>
 
-### 🔗 [vigil-app-six.vercel.app](https://vigil-app-six.vercel.app)
+<a href="https://vigil-app-six.vercel.app">
+  <img src="https://img.shields.io/badge/🌐  LIVE  DEMO  —  vigil--app--six.vercel.app-%230f172a?style=for-the-badge&logoColor=white" height="40"/>
+</a>
 
-<br/>
+<br/><br/>
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Groq](https://img.shields.io/badge/Groq-LLaMA%203.3%2070B-f55036?style=for-the-badge)](https://groq.com)
-
-<br/>
+[![Clerk](https://img.shields.io/badge/Clerk-Auth-6c47ff?style=for-the-badge&logo=clerk&logoColor=white)](https://clerk.dev)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 
 </div>
 
@@ -32,7 +26,7 @@
 
 ## What is VIGIL?
 
-VIGIL is an **AI Productivity Agent** that silently observes your goals, breaks them into actionable tasks, and scores your progress with cold, calculated honesty — no motivational fluff, no push notifications, no empty hype.
+VIGIL is an **AI Productivity Agent** that silently observes your goals, breaks them into actionable tasks, and scores your progress — no motivational fluff, no push notifications, no empty hype.
 
 You set the goals. You do the work. VIGIL watches.
 
@@ -40,7 +34,7 @@ At the end of the week, it delivers a **verdict**.
 
 ---
 
-## Features
+## ✨ Features
 
 ### 🎯 Goal Management
 Set goals with deadlines. VIGIL keeps track — no reminders, no nagging.
@@ -49,17 +43,49 @@ Set goals with deadlines. VIGIL keeps track — no reminders, no nagging.
 Powered by **LLaMA 3.3 70B via Groq**, VIGIL auto-generates a smart, realistic task list for every goal you add.
 
 ### ✅ Daily Task Tracking
-Check off tasks as you complete them. Watch your progress bar move. Feel the weight of the ones you haven't touched.
+Check off tasks as you complete them. Watch your progress bar move.
 
 ### 📊 Weekly Review
-Every week, VIGIL reviews what you did — and what you didn't. It scores your week and delivers a **cold, honest verdict** using AI analysis.
+Every week, VIGIL reviews what you did — and what you didn't. It scores your week and delivers a **cold, honest verdict**.
 
 ### 🔐 Auth & Onboarding
 Seamless sign-in with **Clerk** (email + Google). Smooth onboarding to get your first goals in immediately.
 
 ---
 
-## Tech Stack
+## 🏗️ Architecture
+
+<table>
+  <tr>
+    <th width="33%">🖥️ Frontend</th>
+    <th width="33%">🗄️ Backend</th>
+    <th width="33%">🤖 AI</th>
+  </tr>
+  <tr>
+    <td align="center">
+      Next.js 14 App Router<br/>
+      TypeScript<br/>
+      Tailwind CSS<br/>
+      Glassmorphism UI
+    </td>
+    <td align="center">
+      Supabase (PostgreSQL)<br/>
+      Clerk Authentication<br/>
+      Server Actions<br/>
+      Vercel Deployment
+    </td>
+    <td align="center">
+      Groq API<br/>
+      LLaMA 3.3 70B<br/>
+      Task Generation<br/>
+      Weekly Scoring
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🛠️ Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -73,17 +99,7 @@ Seamless sign-in with **Clerk** (email + Google). Smooth onboarding to get your 
 
 ---
 
-## Screenshots
-
-> *Glassmorphism deep space aesthetic — dark, minimal, and focused.*
-
-| Landing | Dashboard | Weekly Review |
-|---|---|---|
-| Deep space hero with animated stars | Goals, tasks, focus score | AI verdict on your week |
-
----
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -108,8 +124,6 @@ cp .env.example .env.local
 
 ### Environment Variables
 
-Create a `.env.local` file in the root:
-
 ```env
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
@@ -133,11 +147,11 @@ GROQ_API_KEY=your_groq_api_key
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```
 VIGIL/
@@ -156,7 +170,7 @@ VIGIL/
 
 ---
 
-## Database Schema
+## 🗄️ Database Schema
 
 ```sql
 -- Goals table
@@ -181,7 +195,7 @@ create table tasks (
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 
 - [ ] Fix Supabase RLS with Clerk JWT for production security
 - [ ] Streak tracking and focus score analytics
@@ -191,20 +205,16 @@ create table tasks (
 
 ---
 
-## About
-
-Built by **Sathvik Shetty** — a developer from Maharashtra, India, building real AI products to learn by doing.
-
-Inspired by the idea that the best productivity tool isn't one that motivates you — it's one that **witnesses** whether you showed up or not.
-
----
-
 <div align="center">
 
-**[Live Demo](https://vigil-app-six.vercel.app)** · **[Report Bug](https://github.com/Sathvik-Shetty-1569/VIGIL/issues)** · **[Request Feature](https://github.com/Sathvik-Shetty-1569/VIGIL/issues)**
+**[🌐 Live Demo](https://vigil-app-six.vercel.app)** · **[🐛 Report Bug](https://github.com/Sathvik-Shetty-1569/VIGIL/issues)** · **[✨ Request Feature](https://github.com/Sathvik-Shetty-1569/VIGIL/issues)**
 
 <br/>
 
 *Built with Next.js · Powered by Groq · Deployed on Vercel*
+
+<br/>
+
+⭐ Star this repo if it helps you!
 
 </div>
