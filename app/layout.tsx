@@ -1,15 +1,15 @@
 import { ClerkProvider } from '@clerk/nextjs'
-import { Space_Grotesk, Inter } from 'next/font/google'
+import { Syne, DM_Sans } from 'next/font/google'
 import './globals.css'
 
-const spaceGrotesk = Space_Grotesk({
+const syne = Syne({
   subsets: ['latin'],
-  variable: '--font-space',
+  variable: '--font-syne',
 })
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-dm-sans',
 })
 
 export const metadata = {
@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${spaceGrotesk.variable} ${inter.variable}`}>
+        <body className={`${syne.variable} ${dmSans.variable}`}>
           {children}
         </body>
       </html>
