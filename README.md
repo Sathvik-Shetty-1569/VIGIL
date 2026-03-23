@@ -36,8 +36,9 @@ At the end of the week, it delivers a **verdict**.
 
 ## 📸 Preview
 
-
 ![VIGIL Landing Page](./LandingPage.png)
+
+*(Note: The UI has been updated to a new Glassmorphism Deep Space aesthetic. Please take a screenshot of the new landing page and overwrite the `LandingPage.png` file in the root directory.)*
 ---
 
 
@@ -70,9 +71,9 @@ Seamless sign-in with **Clerk** (email + Google). Smooth onboarding to get your 
   </tr>
   <tr>
     <td align="center">
-      Next.js 14 App Router<br/>
+      Next.js App Router<br/>
       TypeScript<br/>
-      Tailwind CSS<br/>
+      Framer Motion<br/>
       Glassmorphism UI
     </td>
     <td align="center">
@@ -96,9 +97,9 @@ Seamless sign-in with **Clerk** (email + Google). Smooth onboarding to get your 
 
 | Layer | Technology |
 |---|---|
-| **Framework** | Next.js 14 (App Router) |
+| **Framework** | Next.js (App Router) |
 | **Language** | TypeScript |
-| **Styling** | Tailwind CSS + Glassmorphism |
+| **Styling** | Custom CSS + Framer Motion (Glassmorphism) |
 | **Auth** | Clerk |
 | **Database** | Supabase (PostgreSQL) |
 | **AI** | Groq API — LLaMA 3.3 70B Versatile |
