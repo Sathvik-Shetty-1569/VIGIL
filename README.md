@@ -36,9 +36,8 @@ At the end of the week, it delivers a **verdict**.
 
 ## 📸 Preview
 
-![VIGIL Landing Page](./LandingPage.png)
+![VIGIL Landing Page](./Landing_Page.png)
 
-*(Note: The UI has been updated to a new Glassmorphism Deep Space aesthetic. Please take a screenshot of the new landing page and overwrite the `LandingPage.png` file in the root directory.)*
 ---
 
 
